@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            background: linear-gradient(to bottom right, grey, white);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            padding: 15px;
+            max-width: 322px;
+    
+            /* liquid glass */
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(4px);
+            border: 2px solid rgba(255,255,255,0.2);    
+            border-radius: 25px;
+
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        span {
+            font-size: 2.5rem;
+            color: #f6f6f6;
+        }
+
+        .display {
+            width: 100%;
+            padding: 0 10px;
+            height: 100px;
+            overflow: hidden;
+
+            display: flex;
+            align-items: center;
+            justify-content: end;   
+        }
+
+        #operations {
+            overflow-x: auto;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+        
+        .txt {
+            font-size: 1.8rem;
+        }
+
+        .btn, 
+        .zero {
+            position: relative;
+            height: 60px;
+            top: 0;
+
+            background: rgba(255,255,255,0.3);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 0 rgba(74, 74, 74, 0.5);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            transition: all 0.1s ease;
+        }
+
+        .btn:hover,
+        .zero:hover {
+            background: rgba(255,2555,255,0.5);
+            transition: all 0.2s ease-in;
+        }
+
+        .btn:active,
+        .zero:active {
+            top: 3px;
+            box-shadow: 0 2px 0 rgba(72,72,72,0.5);
+            transition: all 0.1s
+        }
+
+        .btn.active,
+        .zero.active {
+            top: 3px;
+            box-shadow: 0 2px 0 rgba(72,72,72,0.5);
+        }
+
+        .zero {
+            grid-column: 1/3;
+            border-radius: 30px;
+        }
+
+        .btn {
+            width: 60px;
+            border-radius: 50%;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="display">
+            <span id="operations">0</span>
+        </div>
+        <div class="controls">  
+            <button onclick="clearDisplay()" class="btn" id="clear">
+                <span class="txt">AC</span>
+            </button>
+            <button onclick="deleteLast()" class="btn" id="del">
+                <span class="txt">del</span>
+            </button>
+            <button onclick="changeSigns()" class="btn" id="pm">
+                <span>&plusmn;</span>
+            </button>
+            <button onclick="appendToDisplay('&divide;', true)" class="btn" id="divide">
+                <span>&divide;</span>
+            </button>
+            <button onclick="appendToDisplay('1', false)" class="btn" id="one">
+                <span>1</span>
+            </button>
+            <button onclick="appendToDisplay('2', false)" class="btn" id="two">
+                <span>2</span>
+            </button>
+            <button onclick="appendToDisplay('3', false)" class="btn" id="three">
+                <span>3</span>
+            </button>
+            <button onclick="appendToDisplay('&times;', true)" class="btn" id="times">
+                <span>&times;</span>
+            </button>
+            <button onclick="appendToDisplay('4', false)" class="btn" id="four">
+                <span>4</span>
+            </button>
+            <button onclick="appendToDisplay('5', false)" class="btn" id="five">
+                <span>5</span>
+            </button>
+            <button onclick="appendToDisplay('6', false)" class="btn" id="six">
+                <span>6</span>
+            </button>
+            <button onclick="appendToDisplay('&plus;', true)" class="btn" id="plus">
+                <span>&plus;</span>
+            </button>
+            <button onclick="appendToDisplay('7', false)" class="btn" id="seven">
+                <span>7</span>
+            </button>
+            <button onclick="appendToDisplay('8', false)" class="btn" id="eight">
+                <span>8</span>
+            </button>
+            <button onclick="appendToDisplay('9', false)" class="btn" id="nine">
+                <span>9</span>
+            </button>
+            <button onclick="appendToDisplay('&minus;', true)" class="btn" id="minus">
+                <span>&minus;</span>
+            </button>
+            <button onclick="appendToDisplay('0', false)" class="zero" id="zero">
+                <span>0</span>
+            </button>
+            <button onclick="appendToDisplay('.', false)" class="btn" id="decimal">
+                <span>.</span>
+            </button>
+            <button onclick="calculate()" class="btn" id="equals">
+                <span>&equals;</span>
+            </button>
+        </div> 
+    </div>
+    <script>
+        const operations = document.getElementById("operations");
+        const clear = document.getElementById("clear");
+        const pm = document.getElementById("pm");
+        const del = document.getElementById("del");
+        const divide = document.getElementById("divide");
+        const one = document.getElementById("one");
+        const two = document.getElementById("two");
+        const three = document.getElementById("three");
+        const times = document.getElementById("times");
+        const four = document.getElementById("four");
+        const five = document.getElementById("five");
+        const six = document.getElementById("six");
+        const plus = document.getElementById("plus");
+        const seven = document.getElementById("seven");
+        const eight = document.getElementById("eight");
+        const nine = document.getElementById("nine");
+        const minus = document.getElementById("minus");
+        const zero = document.getElementById("zero");
+        const decimal = document.getElementById("decimal");
+        const equals = document.getElementById("equals");
+        
+        let isInitial = true;
+        let lastInput = false;
+
+        function appendToDisplay(input, isOp) {
+            let opp = operations.innerHTML
+            if (isInitial && isOp) {
+                return;
+            } else if (isInitial && !isOp) {
+                operations.innerHTML = input;
+                isInitial = false;
+            } else if ((operations.innerHTML[operations.innerHTML.length - 1] === "×" || 
+                        operations.innerHTML[operations.innerHTML.length - 1] === "÷" || 
+                        operations.innerHTML[operations.innerHTML.length - 1] === "−" || 
+                        operations.innerHTML[operations.innerHTML.length - 1] === "+") && isOp) {           
+                operations.innerHTML[operations.innerHTML.length - 1] = input;
+            }
+            else {  
+                operations.innerHTML += input; 
+                operations.scrollLeft = operations.scrollWidth;
+            }
+        }
+
+        function deleteLast() {
+            let current = operations.innerHTML;
+            if (current.length <= 1 || (current.length === 2 && current.startsWith("−"))) {
+                operations.innerHTML = "0";
+                isInitial = true;
+            } else {
+                operations.innerHTML = current.slice(0, -1);
+            }
+        }
+
+        function changeSigns() {
+            let i = operations.innerHTML.length - 1;
+            while (i>=0) {
+                if (operations.innerHTML[i] === "+" || 
+                    operations.innerHTML[i] === "×" || 
+                    operations.innerHTML[i] === "÷" || 
+                    operations.innerHTML[i] === "−") {
+                    break;
+                }
+                i--;
+            }
+            if (operations.innerHTML[i] != '-') {
+                operations.innerHTML = operations.innerHTML.slice(0, i+1) + '-' + operations.innerHTML.slice(i+1);
+            }
+        }
+
+        function clearDisplay() {
+            isInitial = true;   
+            operations.innerHTML = "0"
+        }
+
+        function calculate() {
+            const parsed = operations.innerHTML.replace(/×/g, "*").replace(/÷/g, "/").replace(/−/g, "-").replace(/--/g, "- -");
+            try {
+                operations.innerHTML = eval(parsed);
+                isInitial = true;
+            } catch(error) {
+                display.innerHTML = "error";
+                isInitial = true;
+            }
+        }
+
+        function keydown_animation(btnID) {
+            btnID.classList.add('active');
+            setTimeout(() => btnID.classList.remove('active'), 100);
+        }
+
+        document.addEventListener("keydown", (event) => {
+            const key = event.key
+            if (key === "0") {
+                appendToDisplay("0", false);
+                keydown_animation(zero)
+            }
+            else if (key === "1") {
+                appendToDisplay("1", false);
+                keydown_animation(one)
+            } 
+            else if (key === "2") {
+                appendToDisplay("2", false);
+                keydown_animation(two)
+            } 
+            else if (key === "3") {
+                appendToDisplay("3", false);
+                keydown_animation(three)
+            } 
+            else if (key === "4") {
+                appendToDisplay("4", false);
+                keydown_animation(four)
+            } 
+            else if (key === "5") {
+                appendToDisplay("5", false);
+                keydown_animation(five)
+            } 
+            else if (key === "6") {
+                appendToDisplay("6", false);
+                keydown_animation(six)
+            } 
+            else if (key === "7") {
+                appendToDisplay("7", false);
+                keydown_animation(seven)
+            } 
+            else if (key === "8") {
+                appendToDisplay("8", false);
+                keydown_animation(eight)
+            } 
+            else if (key === "9") {
+                appendToDisplay("9", false);
+                keydown_animation(nine)
+            } 
+            else if (key === ".") {
+                appendToDisplay(".", false);
+                keydown_animation(dot)
+            } 
+            else if (key === "+") {
+                appendToDisplay("+", true);
+                keydown_animation(plus)
+            }
+            else if (key === "-") {
+                appendToDisplay("−", true);
+                keydown_animation(minus)
+            }
+            else if (key === "*") {
+                appendToDisplay("×", true);
+                keydown_animation(times)
+            }
+            else if (key === "/") {
+                appendToDisplay("÷", true);
+                keydown_animation(divide)
+            }
+            else if (key === "Enter" || key === "=") {
+                event.preventDefault(); 
+                keydown_animation(equals)
+                calculate();
+            }
+            else if (key === "Escape") {
+                clearDisplay();
+                keydown_animation(clear)
+            }
+            else if (key === "Backspace") {
+                deleteLast()
+                keydown_animation(del)
+            }
+        })
+    </script>
+</body>
+</html>
